@@ -1,7 +1,7 @@
 # Considering only 20 total seats available
 # Maximum of 30 seats in possible in queue (waiting list)
 # uin = unique identity number given to each new user
-# name_list = [[uin1,name1],[uin2,name2],....]
+# name_list = saved in an external file
 # seat_list = [uin1,uin2,uin3......]
 # waiting_list = [[uin1,number_of_seats1],[uin2,number_of_seats2]....]
 
@@ -13,6 +13,7 @@ TOTAL_SEATS = 20
 WAITING_SEATS = 30
 MAX_SEAT_PER_UIN = 4
 
+# Checking if it is a new user 
 def check_user():
     print("Hello there !")
 
@@ -22,7 +23,7 @@ def check_user():
     else :
         login(name_list)
 
-
+# Login of old user
 def login(name_list):
     
     uin = input("Enter your UIN number : ")
@@ -33,29 +34,35 @@ def login(name_list):
         print("All users : ",name_list)
         check_user()
 
+    file = open("data.txt" ,"r")
+    name_list = file.readlines()
 
     for i in name_list: 
-        if i[0] == uin :
-            print("Hello",i[1])
-            name = i[1]
+        if i[:8] == uin :
+            print("Hello",i[9:])
+            name = i[9:]
             user_choice(uin,name)
-        
-    print("You are not registered in our database")
-    if input("Are you a new user ? (y/n) ") == "y" :
-        new_user()
-    elif input() == "n" :
-        login(name_list)
 
+    check_user()
+
+
+# Registring of new user
 def new_user():
     name = input("Enter name : ")
+    if len(name) < 3 :
+        print("Name should be atleast 3 character")
+        new_user()
+
     uin = name[0:3].upper() + str(randint(20000,29999))
     print("Your UIN is :",uin)
 
-    z = [uin , name]
-    name_list.append(z)
+    file = open("data.txt", "a")
+    file.write(f"{uin}:{name}\n")
+    file.close()
     user_choice(uin,name)
 
 
+# User's choice
 def user_choice(uin,name):
 
     k = int(input("""Enter choice --> 
@@ -86,6 +93,7 @@ def user_choice(uin,name):
         user_choice(uin,name)
 
 
+# Preview of current availability of seats
 def seat_booked_view(seat_list):
     print("""     E = Empty , R = Booked seat""")
 
@@ -102,6 +110,8 @@ def seat_booked_view(seat_list):
         if i == 4 :
             print("\n")
 
+
+# Booking seats in actual train
 def seat_booking(seat_list,uin,name):
 
     empty_seat = 0
@@ -159,6 +169,8 @@ def seat_booking(seat_list,uin,name):
     time.sleep(2)
     user_choice(uin,name)
 
+
+# Booking seats in waiting list
 def waiting_seat_booking(waiting_seat_list,uin,name):
 
     print("No seat available")
@@ -169,7 +181,7 @@ def waiting_seat_booking(waiting_seat_list,uin,name):
             already_booked = True
             break
 
-    if input("Book seat under waiting list ?") == "y":
+    if input("Book seat under waiting list (y/n) ?") == "y":
         if already_booked and waiting_seat_list[i][1] < MAX_SEAT_PER_UIN:
             number_of_seats = int(input(f"How many seats ? (Maximum of { 10-waiting_seat_list[i][1]}) : "))
             if number_of_seats <= MAX_SEAT_PER_UIN-waiting_seat_list[i][1]:    
@@ -197,6 +209,7 @@ def waiting_seat_booking(waiting_seat_list,uin,name):
     user_choice(uin,name)
 
 
+# Cancelling seats (From both lists)
 def seat_cancelling(seat_list,waiting_seat_list,uin,name):
 
     seat_booked_view(seat_list)
@@ -208,10 +221,10 @@ def seat_cancelling(seat_list,waiting_seat_list,uin,name):
             seat_booked = True
 
     if seat_booked:
-        while(input("Cancel your seat ? ") == "y"):
-            seat_to_cancel = int(input("Which seat to cancel ? (0 to return)"))
+        while(input("Cancel your seat ? (y/n) ") == "y"):
+            seat_to_cancel = int(input("Which seat do you wish to cancel ? (0 to return)"))
             if seat_to_cancel > 0 and seat_list[seat_to_cancel-1] == uin :
-                if(input(f"Cancel seat {seat_to_cancel}") == "y"):
+                if(input(f"Cancel seat {seat_to_cancel} ? (y/n) ") == "y"):
                     seat_list[seat_to_cancel-1] = 0 
 
             elif seat_list[seat_to_cancel-1] != uin :
@@ -241,7 +254,7 @@ def seat_cancelling(seat_list,waiting_seat_list,uin,name):
             break
 
     if waiting_seat_booked == True:
-        while(input("Cancel seats in waiting list ? " == "y")):
+        while(input("Cancel seats in waiting list ? (y/n) " == "y")):
             k = int(input("How many seats to cancel ? "))  
             if k > 0 and k <= waiting_seat_list[i][1] :
                 waiting_seat_list[i][1] -= k 
@@ -253,7 +266,8 @@ def seat_cancelling(seat_list,waiting_seat_list,uin,name):
 
     user_choice(uin,name)
 
-    
+
+# Seat status of user
 def seat_status(uin, name):
 
     print("Name :",name)
@@ -281,11 +295,11 @@ def seat_status(uin, name):
 
     user_choice(uin, name)
 
+
+# Main funtion
 if __name__ == "__main__":
     seat_list = [0]*TOTAL_SEATS
     waiting_seat_list = []
     name_list = []
 
     check_user()
-
-
